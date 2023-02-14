@@ -62,9 +62,9 @@ app.get("/states/:stateId/", async (request, response) => {
   const getState = await db.get(getStateQuery);
 
   response.send({
-    stateId: `${getState.state_id}`,
-    stateName: `${getState.state_name}`,
-    population: `${getState.population}`,
+    stateId: getState.state_id,
+    stateName: getState.state_name,
+    population: getState.population,
   });
 });
 
@@ -122,14 +122,19 @@ app.put("/districts/:districtId/", async (request, response) => {
 app.get("/states/:stateId/stats/", async (request, response) => {
   const { stateId } = request.params;
   const getStatisticsQuery = `SELECT 
-                                        cases AS totalCases,
-                                        cured AS totalCured,
-                                        active AS totalActive,
-                                        deaths AS totalDeaths
+                                        SUM(cases),
+                                        SUM(cured),
+                                        SUM(active),
+                                        SUM(deaths)
                                    FROM state Natural Join district
                                    WHERE state_id = ${stateId};`;
   const getStatistics = await db.get(getStatisticsQuery);
-  response.send(getStatistics);
+  response.send({
+    totalCases:getStatistics["SUM(cases)"],
+    totalCured:getStatistics["SUM(cured)"],
+    totalActive:getStatistics["SUM(active)"],
+    totalDeaths:getStatistics["SUM(deaths)"]
+  });
 });
 
 //API 8
